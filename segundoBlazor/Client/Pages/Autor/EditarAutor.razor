@@ -1,0 +1,24 @@
+﻿@page "/editarAutor/{id}";
+@inject HttpClient http;
+@using segundoBlazor.Shared.Autor;
+
+
+
+<FormularioAutor oAutorEdit="oAutorCLS"
+                 listPais="listPais" listSexo="listSexo" />
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    public AutorEditCLS oAutorCLS = new AutorEditCLS();
+    public List<PaisCLS> listPais = new List<PaisCLS>();
+    public List<SexoCLS> listSexo = new List<SexoCLS>();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        oAutorCLS = await http.GetFromJsonAsync<AutorEditCLS>("api/Autor/recuperar/" + Id);
+        listPais = await http.GetFromJsonAsync<List<PaisCLS>>("api/Autor/PaisList");
+        listSexo = await http.GetFromJsonAsync<List<SexoCLS>>("api/Autor/SexoList");
+    }
+}

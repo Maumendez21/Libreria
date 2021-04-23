@@ -1,0 +1,328 @@
+﻿@inject NavigationManager navigation
+
+
+@if (lista == null)
+{
+    <h1 class="alert alert-success">Cargando...</h1>
+}
+else
+{
+
+    if (permitAdd)
+    {
+
+        <div>
+            <NavLink href="@rutaAgregar">
+                <button class="btn btn-primary">Agregar</button>
+            </NavLink>
+        </div>
+
+    }
+
+    @if (type != "none")
+    {
+        <label class="mr-4 ml-4">@label</label>
+        @if (type == "text")
+        {
+
+
+            @if (button == true)
+            {
+
+                <div class="mr-4 ml-4 mb-4" style="display:grid;grid-template-columns:8fr 1fr">
+                    <input type="text" class="form-control form-check mr-2" @bind-value="valor" @bind-value:event="oninput" />
+                    <button @onclick="busqueda" class="btn btn-primary">Buscar</button>
+                </div>
+            }
+            else
+            {
+                <div class="mr-4 ml-4 mb-4">
+                    <input type="text" @onkeyup="busqueda" class="form-control form-check mr-2" @bind-value="valor" @bind-value:event="oninput" />
+                </div>
+            }
+
+        }
+        else if (type == "combobox")
+        {
+            if (button)
+            {
+
+                <div class="mr-4 ml-4 mb-4" style="display:grid;grid-template-columns:8fr 1fr">
+                    <select @bind-value="valor" class="form form-control" @bind-value:event="oninput">
+                        <option value="">--Seleccione--</option>
+                        @foreach (var item in combobox)
+                        {
+                            <option value="@item.GetType().GetProperty(valueMember).GetValue(item)">
+                                @item.GetType().GetProperty(displayMember).GetValue(item)
+                            </option>
+                        }
+                    </select>
+
+                    <button class="btn btn-primary" @onclick="busqueda">Buscar</button>
+                </div>
+            }
+            else
+            {
+                <div class="mr-4 ml-4 mb-4" style="display:grid;grid-template-columns:8fr 1fr">
+                    <select @bind-value="valor" class="form form-control" @bind-value:event="oninput" @onchange="busqueda">
+                        <option value="">--Seleccione--</option>
+                        @foreach (var item in combobox)
+                        {
+                            <option value="@item.GetType().GetProperty(valueMember).GetValue(item)">
+                                @item.GetType().GetProperty(displayMember).GetValue(item)
+                            </option>
+                        }
+                    </select>
+                </div>
+            }
+        }
+    }
+
+    <div class="dataTables_wrapper mb-5">
+
+        <div class="dataTables_length" id="example_length">
+            <label>
+                Show <select name="example_length" aria-controls="example" class=""
+                             @bind-value="numeroRegPag" @bind-value:event="oninput" @onchange="cambiarNumReg">
+                    <option value="3">3</option>
+                    <option value="5">5</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select> entries
+            </label>
+
+        </div>
+
+        <table class="table table-striped dataTable no-footer">
+            <thead>
+                <tr role="row">
+                    @foreach (string item in cabeceras)
+                    {
+                        <td>@item</td>
+                    }
+                    @if (permitDelete == true || permitUpdate == true)
+                    {
+                        <td>Operaciónes</td>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+
+                @{
+                    List<object> listaReturn = new List<object>();
+                    int indiceValor = 0;
+
+                    // Cuando se da click al botón
+                    if (indiceVal > 1)
+                    {
+                        indiceValor = indiceVal;
+                    }
+                    else
+                    {
+                        // indice 1 (pos 0 a 9)
+                        indiceValor = 1;
+                    }
+
+                    int inicio = indiceValor * numeroRegPag - numeroRegPag;
+                    int fin = indiceValor * numeroRegPag;
+
+                    @for (int i = inicio; i < fin; i++)
+                    {
+                        if (i < lista.Length)
+                        {
+
+                            listaReturn.Add(lista[i]);
+                        }
+                    }
+
+                }
+
+                @foreach (object item in listaReturn)
+                {
+                    <tr role="row" class="odd">
+
+                        @foreach (var prop in cabeceras)
+                        {
+                            <td>@prop.GetType().GetProperty(prop).GetValue(item).ToString()</td>
+                        }
+                        @if (permitDelete == true || permitUpdate == true)
+                        {
+                            <td>
+                                @if (permitUpdate)
+                                {
+
+                                    <button class="btn btn-success btn-sm fa fa-edit" @onclick="@(()=>Editar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
+                                    </button>
+
+                                }
+                                @if (permitDelete)
+                                {
+                                    <button class="btn btn-danger btn-sm fa fa-trash"
+                                            data-bs-toggle="modal" data-bs-target="#exampleModal" @onclick="@(()=>Eliminar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
+                                    </button>
+
+                                    <MensajeConfirmacion id="@valorEliminar"
+                                                         eventDelete="EliminarDatos" />
+
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @{
+            int inicioPaginado = inicio + 1;
+            int finpaginado = inicioPaginado + numeroRegPag - 1;
+            if (finpaginado > lista.Length)
+            {
+                finpaginado = lista.Length;
+            }
+        }
+        <div class="dataTables_info" id="example_info" role="status" aria-live="polite">Showing @inicioPaginado to @finpaginado of @lista.Length entries</div>
+
+
+        <div class="dataTables_paginate paging_simple_numbers">
+            <span>
+
+                @for (int i = 1; i <= numeroPaginas(); i++)
+                {
+                    int data = i;
+                    <button class="paginate_button "
+                            aria-controls="example"
+                            data-dt-idx="1"
+                            tabindex="0" @onclick="@(e=>Paginar(data))">
+                        @i
+                    </button>
+                }
+            </span>
+        </div>
+    </div>
+}
+
+
+@code {
+
+    public string valor { get; set; }
+    public string valorEliminar { get; set; }
+
+    [Parameter]
+    public EventCallback<string> eventBusqueda { get; set; }
+
+    [Parameter]
+    public EventCallback<string> eventUpdate { get; set; }
+
+    [Parameter]
+    public EventCallback<string> eventDelete { get; set; }
+
+    public int numeroRegPag { get; set; } = 10;
+
+    [Parameter]
+    public string[] cabeceras { get; set; }
+
+    [Parameter]
+    public string rutaAgregar { get; set; } = "";
+
+    [Parameter]
+    public string rutaEditar { get; set; } = "";
+
+    [Parameter]
+    public object[] lista { get; set; }
+
+
+    // Manda toda la tabla
+    [Parameter]
+    public string type { get; set; } = "none";
+
+    // Solo diez Registros
+    public List<object> listaReturn { get; set; }
+
+    public int indiceVal { get; set; }
+
+    [Parameter]
+    public string label { get; set; } = "";
+
+    [Parameter]
+    public bool button { get; set; } = true;
+
+    [Parameter]
+    public bool permitAdd { get; set; } = false;
+
+    [Parameter]
+    public bool permitUpdate { get; set; } = false;
+
+    [Parameter]
+    public bool permitDelete { get; set; } = false;
+
+    [Parameter]
+    public string[] nombrePropiedadesaMostrar { get; set; } = { "idAutor", "nombre", "sexo", "pais", "description" };
+
+    [Parameter]
+    public object[] combobox { get; set; } = null;
+    [Parameter]
+    public string displayMember { get; set; } = null;
+    [Parameter]
+    public string valueMember { get; set; } = null;
+
+
+    public void busqueda()
+    {
+        eventBusqueda.InvokeAsync(valor);
+    }
+
+    public void cambiarNumReg(ChangeEventArgs e)
+    {
+        int valorCambiado = int.Parse(e.Value.ToString());
+        numeroRegPag = valorCambiado;
+    }
+
+    public void Editar(string data)
+    {
+        navigation.NavigateTo(rutaEditar + "/" + data);
+        eventUpdate.InvokeAsync(data);
+    }
+
+    public void Eliminar(string data)
+    {
+        valorEliminar = data;
+    }
+
+    public void EliminarDatos(string data)
+    {
+        eventDelete.InvokeAsync(data);
+    }
+
+    public void Paginar(int inidice)
+    {
+        indiceVal = inidice;
+    }
+
+    public int numeroPaginas()
+    {
+
+        //12 registros
+
+        int numeroBotones;
+        int numeroRegistro = lista.Length;
+
+
+        if (numeroRegistro % numeroRegPag == 0)
+        {
+            numeroBotones = (numeroRegistro / numeroRegPag);
+        }
+        else
+        {
+
+            numeroBotones = (numeroRegistro / numeroRegPag) + 1;
+        }
+
+        return numeroBotones;
+
+
+    }
+
+
+}

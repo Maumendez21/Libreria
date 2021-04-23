@@ -1,0 +1,25 @@
+﻿@page "/libros";
+@using segundoBlazor.Shared.Libro;
+@inject HttpClient http;
+@{
+    string[] cabeceras = { "id", "Nombre Autor", "Título", "Número de páginas", "Stock" };
+    string[] propiedades = { "idLibro", "nombreAutor", "Titulo", "numPaginas", "Stock" };
+
+}
+
+<ListRazor lista=libros
+           cabeceras="cabeceras"
+           nombrePropiedadesaMostrar="propiedades"
+           permitAdd=true
+           rutaAgregar="agregarLibro"
+           permitUpdate=true
+           rutaEditar="editarLibro"/>
+
+@code {
+    public LibroCLS[] libros;
+
+    protected override async Task OnInitializedAsync()
+    {
+        libros = await http.GetFromJsonAsync<LibroCLS[]>("api/Libro/list");
+    }
+}

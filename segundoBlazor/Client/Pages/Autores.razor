@@ -1,0 +1,56 @@
+﻿@page "/Autores"
+@using segundoBlazor.Shared.Autor
+@inject HttpClient http
+
+@{
+    string[] cabeceras = { "Id", "Nombre completo", "Sexo", "País", "Descripción" };
+    string[] propiedadesaMostrar = { "idAutor", "nombre", "sexo", "pais", "description" };
+}
+
+<ListRazor 
+           cabeceras="cabeceras"
+           lista="listaAutores"
+           type="combobox" 
+           displayMember="nombre"
+           permitDelete=true
+           permitAdd=true
+           rutaAgregar="agregarAutor"
+           permitUpdate=true
+           rutaEditar="editarAutor"
+           valueMember="idPais" 
+           label="Filtrar por País"
+           combobox="listaPais"
+           button=false
+           eventBusqueda="buscar"
+           eventDelete="EliminarDatos"
+           permitirReporteExcel=true
+           nombrePropiedadesaMostrar="propiedadesaMostrar"
+           tituloPdf="SARAH ITZEL DOMINGUEZ AGUILAR"
+           permitirReportePdf=true
+           />
+@code {
+
+    private AutorCLS[] listaAutores;
+    private PaisCLS[] listaPais;
+    protected override async Task OnInitializedAsync()
+    {
+        listaAutores = await http.GetFromJsonAsync<AutorCLS[]>("api/Autor/List");
+        listaPais = await http.GetFromJsonAsync<PaisCLS[]>("api/Autor/PaisList");
+
+    }
+
+    public async Task buscar(string data)
+    {
+        listaAutores = await http.GetFromJsonAsync<AutorCLS[]>("api/Autor/" + data);
+    }
+
+    public async Task EliminarDatos(string data)
+    {
+        int resp = await http.GetFromJsonAsync<int>("api/Autor/Delete/" + data);
+
+        if (resp == 1)
+        {
+            listaAutores = await http.GetFromJsonAsync<AutorCLS[]>("api/Autor/List");
+        }
+    }
+}

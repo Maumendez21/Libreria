@@ -1,0 +1,17 @@
+﻿@page "/editarPersona/{id}";
+@inject HttpClient http;
+@using segundoBlazor.Shared.Persona;
+
+<FormularioPersona oPersonaEditCLS="oPersonaCLS" />
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    public PersonaEditarCLS oPersonaCLS = new PersonaEditarCLS();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        oPersonaCLS = await http.GetFromJsonAsync<PersonaEditarCLS>("api/Persona/obtener/" + id);
+        
+    }
+}

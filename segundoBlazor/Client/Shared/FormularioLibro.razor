@@ -1,0 +1,96 @@
+﻿@using segundoBlazor.Shared.Libro;
+@using segundoBlazor.Shared.Autor;
+@inject HttpClient http; 
+@inject IJSRuntime js;
+
+@{
+    string foto = libro.caratula;
+    string archivo = libro.libroPDF;
+ }
+<h3>FormularioLibro</h3>
+
+
+<EditForm Model="@libro" OnValidSubmit="GuardarDatos">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Id</label>
+        <InputNumber readOnly @bind-Value="libro.idLibro" class="form-control"></InputNumber>
+    </div>
+    <div class="form-group">
+        <label>Titulo</label>
+        <InputText @bind-Value="libro.Titulo" class="form-control"></InputText>
+
+    </div>
+    <div class="form-group">
+        <label>Resumen</label>
+        <InputTextArea @bind-Value="libro.Resumen" class="form-control"></InputTextArea>
+
+    </div>
+    <div class="form-group">
+        <label>Numero de páginas</label>
+        <InputNumber @bind-Value="libro.numPaginas" class="form-control"></InputNumber>
+    </div>
+    <div class="form-group">
+        <label>Stock</label>
+        <InputNumber @bind-Value="libro.Stock" class="form-control"></InputNumber>
+    </div>
+    <div class="form-group">
+        <label>Autor</label>
+        <InputSelect class="form-control" @bind-Value="libro.Iidautor">
+            <option>--Seleccione--</option>
+
+            @foreach (AutorCLS autor in listarAutor)
+            {
+                <option value="@autor.idAutor">@autor.nombre</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div>
+        <label>Caratula</label>
+        <img width="100" height="100" style="display:block" id="imgFoto" src="@foto" />
+        <input src="@archivo" type="file" accept="image/png,image/jpg,image/jpeg" id="fuFoto" @onchange="preview" />
+    </div>
+    <div>
+        <label>Archivo Pdf</label>
+        <iframe style="display:block" id="ifData"></iframe>
+        <input type="file" id="fuArchivo" @onchange="previewData" accept="application/pdf" />
+    </div>
+
+    <input type="submit" value="Guardar" class="btn btn-primary" />
+
+    <NavLink href="/libros">
+        <input type="button" value="Regresar" class="btn btn-danger" />
+    </NavLink>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public LibroDTO libro { get; set; } = new LibroDTO();
+
+    public List<AutorCLS> listarAutor = new List<AutorCLS>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listarAutor = await http.GetFromJsonAsync<List<AutorCLS>>("api/Autor/List");
+    }
+
+    public async Task GuardarDatos()
+    {
+
+    }
+
+    protected async Task preview()
+    {
+       await js.InvokeVoidAsync("previewData", "fuFoto", "imgFoto");
+
+    }
+    protected async Task previewData()
+    {
+       await js.InvokeVoidAsync("previewData", "fuArchivo", "ifData");
+
+    }
+}

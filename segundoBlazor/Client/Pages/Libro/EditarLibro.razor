@@ -1,0 +1,14 @@
+﻿@page "/editarLibro/{id}"; 
+<FormularioLibro libro="libroDTO"/>
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    public LibroDTO libroDTO = new LibroDTO();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        libroDTO = await http.GetFromJsonAsync<LibroDTO>("api/libro/" + id);
+
+    }
+}

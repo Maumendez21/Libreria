@@ -1,0 +1,59 @@
+﻿@page "/Personas"
+@using segundoBlazor.Shared.Persona;
+@inject HttpClient http;
+
+@{ 
+    string[] cabeceras = { "id", "Nombre Completo", "Correo", "Fecha Nacimiento" };
+    string[] propiedades = { "idPersona", "nombreCompleto", "correo", "fechaMostrarCadena" };
+}
+
+<ListRazor 
+           lista         ="persona"
+           nombrePropiedadesaMostrar="propiedades"
+           cabeceras     ="cabeceras" 
+           permitDelete  =true
+           eventDelete   ="Eliminar"
+           type          ="text"
+           button        =true
+           eventBusqueda ="Buscar"
+           permitAdd     =true
+           rutaAgregar   ="agregarPersona"
+           permitUpdate=true
+           rutaEditar="editarPersona"
+           label="Ingrese nombre completo"
+           permitirReporteExcel=true
+           permitirReportePdf=true
+           tituloPdf="Personas"
+         />
+
+@code {
+
+    public PersonasCLS[] persona;
+
+    protected override async Task OnInitializedAsync()
+    {
+        persona = await http.GetFromJsonAsync<PersonasCLS[]>("api/Personas/List");
+
+
+    }
+
+    protected  async Task Eliminar(string id)
+    {
+        int resp = await http.GetFromJsonAsync<int>("api/Persona/Delete/" + id);
+
+        if(resp == 1)
+        {
+            persona = await http.GetFromJsonAsync<PersonasCLS[]>("api/Personas/List");
+        }
+
+
+    }
+    protected async Task Buscar(string id)
+    {
+        persona = await http.GetFromJsonAsync<PersonasCLS[]>("api/Personas/buscar/" + id);
+
+        
+
+
+    }
+}

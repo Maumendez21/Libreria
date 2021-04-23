@@ -1,0 +1,84 @@
+﻿@using segundoBlazor.Shared.Persona
+@inject HttpClient http;
+@inject NavigationManager navigation;
+
+<EditForm Model="@oPersonaEditCLS" OnValidSubmit="guardarDatos">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>ID</label>
+        <InputNumber class="form form-control"
+                     readOnly
+                     @bind-Value="oPersonaEditCLS.idPersona" />
+    </div>
+
+    <div class="form-group">
+        <label>Nombre</label>
+        <InputText class="form form-control"
+                  
+                   @bind-Value="oPersonaEditCLS.nombre" />
+    </div>
+
+    <div class="form-group">
+        <label>Apellido Paterno</label>
+        <InputText class="form form-control"
+                   
+                   @bind-Value="oPersonaEditCLS.aPaterno" />
+    </div>
+
+    <div class="form-group">
+        <label>Apellido Materno</label>
+        <InputText class="form form-control"
+                  
+                   @bind-Value="oPersonaEditCLS.aMaterno" />
+    </div>
+
+    <div class="form-group">
+        <label>Teléfono</label>
+        <InputText class="form form-control"
+                  
+                   @bind-Value="oPersonaEditCLS.telefono" />
+    </div>
+    <div class="form-group">
+        <label>Correo</label>
+        <InputText class="form form-control"
+                
+                   @bind-Value="oPersonaEditCLS.correo" />
+    </div>
+
+    <div class="form-group">
+        <label>Fecha de nacimiento</label>
+        <InputDate class="form form-control"
+                   
+                   @bind-Value="oPersonaEditCLS.fechaNac" />
+    </div>
+
+    <input type="submit" value="Guardar" class="btn btn-primary" />
+
+    <NavLink href="/Personas">
+        <input type="button" value="Regresar" class="btn btn-danger" />
+    </NavLink>
+
+
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public PersonaEditarCLS oPersonaEditCLS { get; set; } = new PersonaEditarCLS();
+
+    public async Task guardarDatos()
+    {
+        var respuesta = await http.PostAsJsonAsync("api/Persona/Guardar", oPersonaEditCLS);
+        var content = await respuesta.Content.ReadFromJsonAsync<object>();
+        int resp = int.Parse(content.ToString());
+        if (resp == 1)
+        {
+            navigation.NavigateTo("Personas");
+
+        }
+    }
+
+
+}

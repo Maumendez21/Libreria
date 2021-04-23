@@ -1,0 +1,19 @@
+﻿
+
+<ul>
+
+    @foreach(string el in cursos)
+    {
+        @if(el.Length > 2)
+        {
+            <li>@el</li>
+        }
+    }
+
+</ul>
+
+@code {
+
+    [Parameter]
+    public string[] cursos { get; set; } = { "c sharp", "Vsual Basic" };
+}

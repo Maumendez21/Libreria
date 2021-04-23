@@ -1,0 +1,53 @@
+﻿@using segundoBlazor.Shared
+@inject HttpClient http;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="@otipoLibro" OnValidSubmit="guardarDatos">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Id</label>
+        <InputNumber class="form form-control"
+                     readOnly
+                     @bind-Value="otipoLibro.Iidtipolibro" />
+    </div>
+
+    <div class="form-group">
+        <label>Ingrese nombre del tipo de libro</label>
+        <InputText class="form form-control"
+                   
+                   @bind-Value="otipoLibro.Nombretipolibro" />
+    </div>
+
+    <div class="form-group">
+        <label>Ingrese descripción</label>
+        <InputText class="form form-control"
+                   
+                   @bind-Value="otipoLibro.Descripcion" />
+    </div>
+
+    <input type="submit" value="Guardar" class="btn btn-primary" />
+
+    <NavLink href="/listTipoLibro">
+        <input type="button" value="Regresar" class="btn btn-danger" />
+    </NavLink>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public TipoLibroCLS otipoLibro { get; set; } = new TipoLibroCLS();
+
+    public async Task guardarDatos()
+    {
+        var respuesta = await http.PostAsJsonAsync("api/TipoLibro/Guardar", otipoLibro);
+        var content = await respuesta.Content.ReadFromJsonAsync<object>();
+        int resp = int.Parse(content.ToString());
+        if (resp == 1)
+        {
+            navigationManager.NavigateTo("/listTipoLibro");
+        }
+    }
+}

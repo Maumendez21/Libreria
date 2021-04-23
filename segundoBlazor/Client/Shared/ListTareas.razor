@@ -1,0 +1,49 @@
+﻿@using segundoBlazor.Shared
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Día Semana</th>
+            <th>Tarea</th>
+            <th>Realizado</th>
+            <th>Fecha de la Tarea</th>
+            <th>Operaciones</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (TareaCLS otareaCLS in listaTareas)
+        {
+            <tr>
+                <td>@otareaCLS.diaSemana</td>
+                <td>@otareaCLS.tarea</td>
+                <td>@otareaCLS.realizado</td>
+                <td>@otareaCLS.fechaTarea</td>
+                <td>
+                    <input type="button" class="btn btn-danger" value="Eliminar" 
+                      @onclick="@(()=>eliminar(otareaCLS.tarea))"     />
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+
+@code {
+
+    [Parameter]
+    public List<TareaCLS> listaTareas { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> onclickEliminar { get; set; }
+
+    public string nombreTarea { get; set; }
+
+    public void eliminar(string data)
+    {
+        nombreTarea = data;
+        onclickEliminar.InvokeAsync(data);
+    }
+
+}

@@ -1,0 +1,52 @@
+﻿@page "/listTipoLibro"
+@using segundoBlazor.Shared
+@inject HttpClient http
+
+
+@{
+    string[] cabeceras = { "Id", "Nombre", "Descripción" };
+
+}
+
+<ListRazor cabeceras="cabeceras" 
+           lista="listaTipoLibro" 
+           type="text"
+           label="Ingrese el tipo Libro"
+           button=false
+           eventBusqueda="busquedaTipoLibro"
+           permitDelete=true
+           eventDelete="eliminarTipoLibro"
+           permitAdd=true
+           permitUpdate=true
+           rutaAgregar="agregarTipoLibro"
+           rutaEditar="editarTipoLibro"
+           permitirReporteExcel=true
+         />
+
+@code {
+
+    private TipoLibroCLS[] listaTipoLibro;
+    protected override async Task OnInitializedAsync()
+    {
+        listaTipoLibro = await http.GetFromJsonAsync<TipoLibroCLS[]>("api/TipoLibro/Get");
+    }
+
+
+    public async Task busquedaTipoLibro(string data)
+    {
+        listaTipoLibro = await http.GetFromJsonAsync<TipoLibroCLS[]>("api/TipoLibro/Filtrar/" + data);
+    }
+
+
+    public async Task eliminarTipoLibro(string data)
+    {
+        int resp = await http.GetFromJsonAsync<int>("api/tipoLibro/Delete/" + data);
+
+        if (resp==1)
+        {
+            listaTipoLibro = await http.GetFromJsonAsync<TipoLibroCLS[]>("api/TipoLibro/Get");
+        }
+    }
+
+
+}

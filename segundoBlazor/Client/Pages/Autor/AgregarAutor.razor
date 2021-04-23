@@ -1,0 +1,17 @@
+﻿@page "/agregarAutor";
+@inject HttpClient http;
+@using segundoBlazor.Shared.Autor
+<FormularioAutor listPais="listPais" listSexo="listSexo" />
+
+@code {
+    public List<PaisCLS> listPais = new List<PaisCLS>();
+    public List<SexoCLS> listSexo = new List<SexoCLS>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        listPais = await http.GetFromJsonAsync<List<PaisCLS>>("api/Autor/PaisList");
+        listSexo = await http.GetFromJsonAsync<List<SexoCLS>>("api/Autor/SexoList");
+    }
+
+
+}
