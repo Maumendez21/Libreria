@@ -43,7 +43,15 @@
 
             @foreach (AutorCLS autor in listarAutor)
             {
-                <option value="@autor.idAutor">@autor.nombre</option>
+                if (libro.Iidautor == autor.idAutor.ToString())
+                {
+                    <option value="@autor.idAutor" selected>@autor.nombre</option>
+                }
+                else
+                {
+                   <option value="@autor.idAutor">@autor.nombre</option>
+
+                }
             }
         </InputSelect>
     </div>
@@ -81,16 +89,28 @@
     public async Task GuardarDatos()
     {
 
+        string data = await js.InvokeAsync<string>("obtenerArchivo", "imgFoto");
+        string data2 = await js.InvokeAsync<string>("obtenerArchivo", "ifData");
+
+        libro.caratula = data;
+        libro.libroPDF = data2;
+
+        var respuesta = await http.PostAsJsonAsync("api/libro/guardar", libro);
+        var content = await respuesta.Content.ReadFromJsonAsync<object>();
+        int resp = int.Parse(content.ToString());
+        if (resp == 1)
+        {
+            nav.NavigateTo("libros");
+        }
     }
 
     protected async Task preview()
     {
-       await js.InvokeVoidAsync("previewData", "fuFoto", "imgFoto");
-
+        await js.InvokeVoidAsync("previewData", "fuFoto", "imgFoto");
     }
     protected async Task previewData()
     {
-       await js.InvokeVoidAsync("previewData", "fuArchivo", "ifData");
+        await js.InvokeVoidAsync("previewData", "fuArchivo", "ifData");
 
     }
 }

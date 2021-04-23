@@ -84,6 +84,29 @@ namespace segundoBlazor.Server.Controllers
         }
 
         [HttpGet]
+        [Route("api/eliminarLibro/{id}")]
+        public int eliminarLibro(int id)
+        {
+            int resp = 0;
+            try
+            {
+                using (BDBibliotecaContext db = new BDBibliotecaContext())
+                {
+                    Libro libro = db.Libros.Where(p => p.Iidlibro == id).First();
+                    libro.Bhabilitado = 0;
+                    db.SaveChanges();
+                    resp = 1;
+                }
+            }
+            catch (Exception)
+            {
+
+                resp = 0;
+            }
+            return resp;
+        }
+
+        [HttpGet]
         [Route("api/libro/{idLibro}")]
         public LibroDTO RecuperarLibro(int idLibro)
         {

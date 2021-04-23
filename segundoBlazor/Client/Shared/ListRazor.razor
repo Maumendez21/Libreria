@@ -6,6 +6,8 @@
 @using iText.Pdfa;
 @using iText.Layout;
 @using iText.Layout.Element;
+@using Syncfusion.DocIO;
+@using Syncfusion.DocIO.DLS; 
 @inject IJSRuntime jsruntime;
 
 
@@ -26,6 +28,10 @@ else
             </NavLink>
 
 
+        }
+        @if (permitirWord)
+        {
+            <a @onclick="exportarWord" class="btn btn-success" href="@word" >Exportar Word</a>
         }
         @if (permitirReporteExcel)
         {
@@ -171,14 +177,14 @@ else
                             @if (permitUpdate)
                             {
 
-                                <button class="btn btn-success btn-sm fa fa-edit" @onclick="@(()=>Editar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
+                                <button class="btn btn-success btn-sm fa fa-edit" @onclick="@(() => Editar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
                                 </button>
 
                             }
                             @if (permitDelete)
                             {
                                 <button class="btn btn-danger btn-sm fa fa-trash"
-                                        data-bs-toggle="modal" data-bs-target="#exampleModal" @onclick="@(()=>Eliminar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
+                                        data-bs-toggle="modal" data-bs-target="#exampleModal" @onclick="@(() => Eliminar(@item.GetType().GetProperties()[0].GetValue(@item).ToString()))">
                                 </button>
 
                                 <MensajeConfirmacion id="@valorEliminar"
@@ -211,7 +217,7 @@ else
                 <button class="paginate_button "
                         aria-controls="example"
                         data-dt-idx="1"
-                        tabindex="0" @onclick="@(e=>Paginar(data))">
+                        tabindex="0" @onclick="@(e => Paginar(data))">
                     @i
                 </button>
             }
@@ -225,6 +231,7 @@ else
 
 
     public string excel = "";
+    public string word = "";
     public string valor { get; set; }
     public string valorEliminar { get; set; }
 
@@ -283,6 +290,8 @@ else
     public bool permitirReporteExcel { get; set; } = false;
     [Parameter]
     public bool permitirReportePdf { get; set; } = false;
+    [Parameter]
+    public bool permitirWord { get; set; } = false;
 
 
 
@@ -298,6 +307,59 @@ else
     public void busqueda()
     {
         eventBusqueda.InvokeAsync(valor);
+    }
+
+    public void exportarWord()
+    {
+        using (MemoryStream ms = new MemoryStream())
+        {
+            WordDocument document = new WordDocument();
+            WSection section = document.AddSection() as WSection;
+
+            section.PageSetup.Margins.All = 72;
+
+            IWParagraph paragraph = section.AddParagraph();
+            paragraph.ApplyStyle("Normal");
+            paragraph.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+            WTextRange textRange = paragraph.AppendText(tituloPdf) as WTextRange;
+
+            textRange.CharacterFormat.FontSize = 20f;
+            textRange.CharacterFormat.FontName = "Arial";
+            textRange.CharacterFormat.TextColor = Syncfusion.Drawing.Color.Blue;
+
+            //crear una tabla 
+            IWTable wTable = section.AddTable();
+            int numeroCabeceras = cabeceras.Length;
+            int numeroFilas = lista.Length;
+            wTable.ResetCells(numeroFilas+1, numeroCabeceras);
+
+            for (int i = 0; i < numeroCabeceras; i++)
+            {
+                wTable[0, i].AddParagraph().AppendText(cabeceras[i]);
+            }
+            int fila = 1;
+            int col = 0;
+            foreach (object item in lista)
+            {
+                col = 0;
+                foreach (string prop in nombrePropiedadesaMostrar)
+                {
+                    wTable[fila, col].AddParagraph().AppendText(
+                            item.GetType().GetProperty(prop).GetValue(item).ToString()
+                        ); ;
+                    col++;
+                }
+                fila++;
+            }
+
+            document.Save(ms, FormatType.Docx);
+
+            byte[] buffer = ms.ToArray();
+            string base64 = Convert.ToBase64String(buffer);
+
+            word = "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," + base64;
+
+        }
     }
 
     public void exportarExcel()
@@ -351,19 +413,13 @@ else
             PdfWriter writer = new PdfWriter(ms);
             using (var pdfDoc = new PdfDocument(writer))
             {
-
                 // creación de documento
                 Document doc = new Document(pdfDoc);
                 Paragraph p1 = new Paragraph(tituloPdf);
-
                 p1.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
                 p1.SetFontSize(20);
                 doc.Add(p1);
-
-
                 Table table = new Table(cabeceras.Length);
-
-
                 Cell celda;
                 for (int i = 0; i < cabeceras.Length; i++)
                 {
@@ -371,7 +427,6 @@ else
                     celda.Add(new Paragraph(cabeceras[i]));
                     table.AddHeaderCell(celda);
                 }
-
                 foreach (object item in lista)
                 {
                     foreach (string prop in nombrePropiedadesaMostrar)
@@ -383,18 +438,14 @@ else
                         table.AddCell(celda);
                     }
                 }
-
                 doc.Add(table);
-
                 // Cerrado del documento
                 doc.Close();
                 writer.Close();
-
                 // Esto es para descargar
                 byte[] buffer = ms.ToArray();
                 string base64 = Convert.ToBase64String(buffer);
                 pdf = "data:application/pdf;base64," + base64;
-
                 jsruntime.InvokeVoidAsync("descargaPDF", pdf);
 
             }
@@ -403,7 +454,7 @@ else
 
     public void cambiarNumReg(ChangeEventArgs e)
     {
-        int valorCambiado =  int.Parse(e.Value.ToString());
+        int valorCambiado = int.Parse(e.Value.ToString());
         numeroRegPag = valorCambiado;
     }
 
@@ -437,7 +488,7 @@ else
         int numeroRegistro = lista.Length;
 
 
-        if (numeroRegistro%numeroRegPag == 0)
+        if (numeroRegistro % numeroRegPag == 0)
         {
             numeroBotones = (numeroRegistro / numeroRegPag);
         }
@@ -451,6 +502,6 @@ else
 
 
     }
-
-
 }
+
+

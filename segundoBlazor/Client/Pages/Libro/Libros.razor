@@ -13,7 +13,8 @@
            permitAdd=true
            rutaAgregar="agregarLibro"
            permitUpdate=true
-           rutaEditar="editarLibro"/>
+           rutaEditar="editarLibro"
+           permitDelete=true eventDelete="eliminarLibro"/>
 
 @code {
     public LibroCLS[] libros;
@@ -21,5 +22,15 @@
     protected override async Task OnInitializedAsync()
     {
         libros = await http.GetFromJsonAsync<LibroCLS[]>("api/Libro/list");
+    }
+
+    public async Task eliminarLibro(string id)
+    {
+        int resp = await http.GetFromJsonAsync<int>("api/eliminarLibro/" + id);
+        if (resp==1)
+        {
+             libros = await http.GetFromJsonAsync<LibroCLS[]>("api/Libro/list");
+
+        }
     }
 }
